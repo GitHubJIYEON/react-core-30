@@ -1,28 +1,12 @@
+import Content from "./components/Content";
+import Header from "./components/Header";
+
 function App() {
     return (
         <div id="app">
-            <h2>Hello, Object!</h2>
+            <Header />
+            <Content />
         </div>
     );
 }
 export default App;
-
-// console.log 결과
-// {
-//   "type": "div",
-//   "props": {
-//     "id": "app",
-//     "children": {
-//       "type": "h2",
-//       "props": {
-//         "children": {
-//           "type": "string",
-//           "props": {
-//             "nodeValue": "Hello, Object!",
-//             "children": []
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
