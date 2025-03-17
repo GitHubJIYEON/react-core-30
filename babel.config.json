@@ -1,0 +1,15 @@
+{
+    "presets": ["@babel/preset-env"],
+    "esbuild": {
+        "jsx": "automatic"
+    },
+    "plugins": [
+        [
+            "@babel/plugin-transform-react-jsx",
+            {
+                "runtime": "automatic",
+                "importSource": "@/libs/jsx"
+            }
+        ]
+    ]
+}
