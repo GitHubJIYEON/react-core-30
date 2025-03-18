@@ -1,8 +1,5 @@
 {
     "presets": ["@babel/preset-env"],
-    "esbuild": {
-        "jsx": "automatic"
-    },
     "plugins": [
         [
             "@babel/plugin-transform-react-jsx",

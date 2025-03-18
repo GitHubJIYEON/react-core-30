@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "transpile": "babel App.jsx --out-dir dist --extensions \".jsx\" --config-file ./babel.config.json"
     },
     "devDependencies": {
         "vite": "^6.2.0"

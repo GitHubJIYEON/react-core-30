@@ -1,20 +1,20 @@
+import { createElement as baseCreateElement } from "@/libs/jsx/createElement";
+
 /**
- * JSX 요소를 JavaScript 객체로 변환 (단일 자식 처리 / 여러 자식 처리)
- *
- * @param {string|function} type - 요소의 타입 (태그 이름, 프래그먼트, 컴포넌트)
- * @param {object|null} props - 요소의 속성 객체
- * @param {...any} children - 자식 요소들
- * @returns {object} JSX를 나타내는 객체
+ * classic + automatic 혼합형 런타임
+ * jsx.createElement 형태로 esbuild가 호출하게 유도
  */
 
-import { createElement } from "@/libs/jsx/createElement";
+export const jsx = {
+    /**
+     * esbuild에서 JSX → jsx.createElement 호출용
+     * @param {string | Function} type - 태그명 또는 컴포넌트
+     * @param {object} props - 속성
+     * @param {...any} children - 자식 요소
+     * @returns {object} Virtual DOM
+     */
 
-// 단일 자식 엘리먼트 처리
-export const jsx = (type, props, ...children) => {
-    return createElement(type, props, ...children);
-};
-
-// 여러 자식을 처리
-export const jsxs = (type, props, ...children) => {
-    return createElement(type, props, ...children.flat(Infinity));
+    createElement: (type, props, ...children) => {
+        return baseCreateElement(type, props, ...children);
+    },
 };
