@@ -58,3 +58,5 @@ Virtual DOM → 실제 DOM 생성 (createElement + appendChild)
 이후 diffing 단계에서 Virtual DOM 비교 및 실제 DOM 패치
 
 ## React 외 다른 라이브러리들과의 차이점
+
+- 함수형 컴포넌트에서는 render() 따로 없고 컴포넌트 함수가 호출되는 것 자체가 render()와 같은 역할, 상태 가 바뀔 때마다 React가 함수를 "다시 호출"해서 Virtual DOM을 새로 반환받음 그래서 함수형 컴포넌트 = 곧 "render함수"
