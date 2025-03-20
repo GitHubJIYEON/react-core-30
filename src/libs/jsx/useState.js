@@ -15,7 +15,7 @@
 let hooks = [];
 let hookIndex = 0;
 
-function useState(initialValue) {
+export function useState(initialValue) {
   const position = hookIndex;
 
   if (hooks[position] === undefined) {
