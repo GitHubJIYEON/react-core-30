@@ -1,13 +1,16 @@
-import Header from "./components/Header";
-import Content from "./components/Content";
-import Counter from "./components/Counter";
+// import Header from "./components/Header";
+// import Content from "./components/Content";
+// import Counter from "./components/Counter";
+import TodoApp from "./TodoApp";
 
 function App() {
   return (
     <div id="app">
-      <Header />
+      <h1>My React Core</h1>
+      <TodoApp />
+      {/* <Header />
       <Content />
-      <Counter />
+      <Counter /> */}
     </div>
   );
 }
