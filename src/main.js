@@ -1,5 +1,18 @@
 import App from "./App.jsx";
+import { render } from "./libs/jsx/render.js";
+import { injectRerender, resetHookIndex } from "./libs/jsx/useState.js";
 
-const appElement = App();
+const root = document.getElementById("root");
 
-console.log(JSON.stringify(appElement, null, 2)); //virtual DOM 생성 확인
+function rerender() {
+  root.innerHTML = "";
+  resetHookIndex(); // hookIndex 초기화
+  const appElement = App();
+  render(appElement, root);
+}
+
+// useState 훅 시스템에 rerender 주입
+injectRerender(rerender);
+
+// 앱 초기 실행
+rerender();

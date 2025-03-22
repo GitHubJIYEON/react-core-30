@@ -6,15 +6,15 @@ import { createElement as baseCreateElement } from "@/libs/jsx/createElement";
  */
 
 export const jsx = {
-    /**
-     * esbuild에서 JSX → jsx.createElement 호출용
-     * @param {string | Function} type - 태그명 또는 컴포넌트
-     * @param {object} props - 속성
-     * @param {...any} children - 자식 요소
-     * @returns {object} Virtual DOM
-     */
+  /**
+   * esbuild에서 JSX → jsx.createElement 호출용
+   * @param {string | Function} type - 태그명 또는 컴포넌트
+   * @param {object} props - 속성
+   * @param {...any} children - 자식 요소
+   * @returns {object} Virtual DOM
+   */
 
-    createElement: (type, props, ...children) => {
-        return baseCreateElement(type, props, ...children);
-    },
+  createElement: (type, props, ...children) => {
+    return baseCreateElement(type, props, ...children);
+  },
 };

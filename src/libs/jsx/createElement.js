@@ -1,28 +1,39 @@
 /**
- * JSX를 JavaScript 객체로 변환하는 createElement 함수
+ * Virtual DOM 요소를 생성하는 함수입니다.
  *
- * @param {string|function} type - 요소의 타입 (HTML 태그명, Fragment, 컴포넌트 함수)
- * @param {object|null} props - 요소의 속성 객체 (attributes, event handlers 등)
- * @param {...any} children - 자식 요소들 (문자열, 숫자, Virtual DOM 객체 등)
- * @returns {object} Virtual DOM을 나타내는 객체
+ * JSX에서 호출된 jsx.createElement()가 실제로 호출하는 핵심 함수입니다.
+ * type, props, children을 받아 Virtual DOM 객체를 반환합니다.
+ *
+ * @param {string | Function} type - 태그명(예: 'div', 'span') 또는 함수형 컴포넌트
+ * @param {object} [props] - 요소의 속성 (id, className, onClick 등)
+ * @param {...any} children - 요소의 자식 노드들 (Virtual DOM 또는 텍스트)
+ * @returns {object} Virtual DOM 객체
+ *
+ * @example
+ * createElement('div', { id: 'box' }, 'Hello')
+ * // 반환:
+ * // {
+ * //   type: 'div',
+ * //   props: {
+ * //     id: 'box',
+ * //     children: ['Hello']
+ * //   }
+ * // }
  */
 
-export function createElement(type, props = {}, ...children) {
-    const normalizedChildren = children
-        .flat()
-        .map((child) =>
-            typeof child === "object"
-                ? child
-                : { type: "TEXT_ELEMENT", props: { nodeValue: child, children: [] } }
-        );
+export function createElement(type, props, ...children) {
+  const normalizedChildren = children.flat(Infinity).map((child) => {
+    if (typeof child === "string" || typeof child === "number") {
+      return child;
+    }
+    return child;
+  });
 
-    const elementProps = Object.freeze({
-        ...props,
-        children: normalizedChildren.length === 1 ? normalizedChildren[0] : normalizedChildren,
-    });
-
-    return Object.freeze({
-        type,
-        props: elementProps,
-    });
+  return {
+    type,
+    props: {
+      ...(props || {}),
+      children: normalizedChildren,
+    },
+  };
 }
