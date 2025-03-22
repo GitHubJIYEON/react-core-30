@@ -42,15 +42,21 @@ export function render(virtualDOM, container) {
   // props 처리
   for (const key in props) {
     if (key === "children") continue;
+
     const value = props[key];
+
     if (key.startsWith("on") && typeof value === "function") {
       const eventName = key.slice(2).toLowerCase();
       domElement.addEventListener(eventName, value);
-    } else if (key === "className") {
-      domElement.setAttribute("class", value);
-    } else {
-      domElement.setAttribute(key, value);
+      continue;
     }
+
+    if (key === "className") {
+      domElement.setAttribute("class", value);
+      continue;
+    }
+
+    domElement.setAttribute(key, value);
   }
 
   // 자식 노드 렌더링
