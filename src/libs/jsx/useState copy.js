@@ -1,19 +1,13 @@
-import { diff } from "./diff.js";
-
 let hooks = [];
 let hookIndex = 0;
 let rerenderCallback = null;
-let oldVDOM = null;
-let root = null;
 
 /**
- * rerender 함수와 root DOM을 주입
- * @param {Function} renderFn - Virtual DOM을 반환하는 함수
- * @param {HTMLElement} rootElement - 실제 DOM 루트
+ * rerender 함수 주입 (렌더러에서 전달)
+ * @param {Function} fn - rerender 함수
  */
-export function injectRerender(renderFn, rootElement) {
-  rerenderCallback = renderFn;
-  root = rootElement;
+export function injectRerender(fn) {
+  rerenderCallback = fn;
 }
 
 /**
@@ -30,12 +24,7 @@ export function useState(initialValue) {
 
   const setState = (newValue) => {
     hooks[position] = newValue;
-
-    if (rerenderCallback && root) {
-      const newVDOM = rerenderCallback();
-      diff(root, newVDOM, oldVDOM);
-      oldVDOM = newVDOM;
-    }
+    rerenderCallback && rerenderCallback(); // 상태 변경 시 자동 리렌더
   };
 
   hookIndex++;
