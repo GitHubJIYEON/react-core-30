@@ -1,98 +1,115 @@
-// 이전 VirtualDOM 트리와 새로운 VirtualDOM 트리를 비교
-// -> 변경된 최소한이 부분만 실제 DOM에 반영하여 성능 최적화
+/**
+ * virtualDOM과 기존 DOM을 비교(diff)하여 변경 사항을 적용합니다.
+ *
+ * @param {HTMLElement} container - 실제 DOM 컨테이너 요소
+ * @param {object|string|number} newVirtualDOM - 새로 렌더링할 Virtual DOM
+ * @param {object|string|number|null} oldVirtualDOM - 이전 Virtual DOM
+ * @param {number} index - 자식 요소의 인덱스 (재귀적으로 사용)
+ */
+export function diff(container, newVirtualDOM, oldVirtualDOM, index = 0) {
+  const domNode = container.childNodes[index];
 
-// diff 알고리즘 동작 순서
-// 1. 노드가 추가되었는지 확인 (새 노드만 존재)
-// 2. 노드가 삭제되었는지 확인 (기존 노드만 존재)
-// 3. 노드가 교체되었는지 확인 (타입 변경 등)
-// 4. 노드의 속성(props)이 변경되었는지 확인 및 적용
-// 5. 자식 노드를 재귀적으로 비교
+  // 이전 노드가 없는 경우 (새로 추가된 노드)
+  if (!oldVirtualDOM) {
+    container.appendChild(createDom(newVirtualDOM));
+    return;
+  }
 
-// 두 노드가 타입 또는 값에서 차이가 있는지 판단하는 함수
-function isNodeChanged(oldNode, newNode) {
+  // 새 노드가 없는 경우 (기존 노드 삭제)
+  if (!newVirtualDOM) {
+    container.removeChild(domNode);
+    return;
+  }
+
+  // 노드의 타입이 변경된 경우
+  if (changed(newVirtualDOM, oldVirtualDOM)) {
+    container.replaceChild(createDom(newVirtualDOM), domNode);
+    return;
+  }
+
+  // 요소 노드의 경우 props 업데이트
+  if (typeof newVirtualDOM !== "string" && typeof newVirtualDOM !== "number") {
+    updateProps(domNode, newVirtualDOM.props, oldVirtualDOM.props);
+
+    // 자식 노드를 재귀적으로 diff
+    const newLength = newVirtualDOM.props.children.length;
+    const oldLength = oldVirtualDOM.props.children.length;
+
+    for (let i = 0; i < Math.max(newLength, oldLength); i++) {
+      diff(
+        domNode,
+        newVirtualDOM.props.children[i],
+        oldVirtualDOM.props.children[i],
+        i
+      );
+    }
+  }
+}
+
+// 두 virtualDOM 간 차이 여부 확인
+function changed(node1, node2) {
   return (
-    typeof oldNode !== typeof newNode || // 타입이 다르면 변경된 것으로 간주
-    (typeof oldNode === "string" && oldNode !== newNode) || // 텍스트 노드 값이 다르면 변경
-    oldNode.type !== newNode.type
-  ); // 엘리먼트 타입(div, p 등)이 다르면 변경
+    typeof node1 !== typeof node2 ||
+    ((typeof node1 === "string" || typeof node1 === "number") &&
+      node1 !== node2) ||
+    node1.type !== node2.type
+  );
 }
 
-// 실제 DOM 요소의 속성을 업데이트하는 함수
-function updateProps(element, oldProps, newProps) {
-  // 제거된 속성 삭제
-  Object.keys(oldProps).forEach((name) => {
-    if (!(name in newProps)) {
-      element.removeAttribute(name);
+// DOM 생성 함수 (render.js와 동일한 로직)
+function createDom(virtualDOM) {
+  if (typeof virtualDOM === "string" || typeof virtualDOM === "number") {
+    return document.createTextNode(String(virtualDOM));
+  }
+
+  const { type, props } = virtualDOM;
+  const dom = document.createElement(type);
+  updateProps(dom, props, {});
+
+  props.children.forEach((child) => dom.appendChild(createDom(child)));
+  return dom;
+}
+
+// DOM props 업데이트
+function updateProps(dom, newProps, oldProps) {
+  // 새 props 추가 및 업데이트
+  Object.keys(newProps).forEach((key) => {
+    if (key === "children") return;
+
+    if (newProps[key] !== oldProps[key]) {
+      setProp(dom, key, newProps[key]);
     }
   });
 
-  // 새로 추가되었거나 변경된 속성 적용
-  Object.keys(newProps).forEach((name) => {
-    if (oldProps[name] !== newProps[name]) {
-      element.setAttribute(name, newProps[name]);
+  // 오래된 props 삭제
+  Object.keys(oldProps).forEach((key) => {
+    if (key === "children") return;
+    if (!(key in newProps)) {
+      removeProp(dom, key, oldProps[key]);
     }
   });
 }
 
-// Virtual DOM을 재귀적으로 비교(diff)하여 실제 DOM 업데이트 수행
-function diff(parent, newNode, oldNode, index = 0) {
-  const currentElement = parent.childNodes[index]; // 현재 위치의 실제 DOM 노드
-
-  // 새로운 노드가 추가된 경우
-  if (!oldNode) {
-    parent.appendChild(createElement(newNode));
-    return;
-  }
-
-  // 기존 노드가 삭제된 경우
-  if (!newNode) {
-    parent.removeChild(currentElement);
-    return;
-  }
-
-  // 노드가 변경된 경우 (타입, 텍스트, 태그명이 다를 때)
-  if (isNodeChanged(oldNode, newNode)) {
-    parent.replaceChild(createElement(newNode), currentElement);
-    return;
-  }
-
-  // 텍스트 노드이고 변경이 없으면 종료
-  if (typeof newNode === "string") {
-    return;
-  }
-
-  // 노드 타입이 같으면 props를 업데이트
-  updateProps(currentElement, oldNode.props, newNode.props);
-
-  // 자식 노드들에 대해 재귀적으로 diff 수행
-  const maxLength = Math.max(newNode.children.length, oldNode.children.length);
-
-  for (let i = 0; i < maxLength; i++) {
-    diff(currentElement, newNode.children[i], oldNode.children[i], i);
+// 속성 추가 및 업데이트
+function setProp(dom, name, value) {
+  if (name.startsWith("on") && typeof value === "function") {
+    const eventType = name.slice(2).toLowerCase();
+    dom.addEventListener(eventType, value);
+  } else if (name === "className") {
+    dom.setAttribute("class", value);
+  } else {
+    dom.setAttribute(name, value);
   }
 }
 
-// Virtual DOM 객체를 실제 DOM 요소로 변환하는 함수
-function createElement(node) {
-  // 텍스트 노드인 경우
-  if (typeof node === "string") {
-    return document.createTextNode(node);
+// 속성 삭제
+function removeProp(dom, name, value) {
+  if (name.startsWith("on") && typeof value === "function") {
+    const eventType = name.slice(2).toLowerCase();
+    dom.removeEventListener(eventType, value);
+  } else if (name === "className") {
+    dom.removeAttribute("class");
+  } else {
+    dom.removeAttribute(name);
   }
-
-  // 엘리먼트 노드인 경우 (div, p 등)
-  const element = document.createElement(node.type);
-
-  // props (속성) 설정
-  Object.entries(node.props || {}).forEach(([key, value]) => {
-    element.setAttribute(key, value);
-  });
-
-  // 자식 노드를 재귀적으로 생성하여 추가
-  (node.children || [])
-    .map(createElement)
-    .forEach((child) => element.appendChild(child));
-
-  return element;
 }
-
-export { diff, createElement };

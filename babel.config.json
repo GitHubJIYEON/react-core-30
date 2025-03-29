@@ -1,12 +1,12 @@
 {
-    "presets": ["@babel/preset-env"],
-    "plugins": [
-        [
-            "@babel/plugin-transform-react-jsx",
-            {
-                "runtime": "automatic",
-                "importSource": "@/libs/jsx"
-            }
-        ]
+  "presets": ["@babel/preset-env"], //polyfill 포함
+  "plugins": [
+    [
+      "@babel/plugin-transform-react-jsx",
+      {
+        "runtime": "automatic",
+        "importSource": "@/libs/jsx"
+      }
     ]
+  ]
 }
