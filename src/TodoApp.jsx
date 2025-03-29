@@ -1,13 +1,15 @@
-// TodoApp.jsx
-import { useState } from "./libs/jsx/useState.js";
+// import { useState } from "./libs/jsx/useState.js";
+import { useState } from "./libs/jsx/valueToUI";
 
 function TodoApp() {
   const [todos, setTodos] = useState([]);
   const [todoText, setTodoText] = useState("");
 
   const addTodo = () => {
+    console.log("todoText:", todoText);
     if (todoText.trim() === "") return;
-    setTodos([...todos, todoText]);
+    const newTodo = { id: Date.now(), text: todoText };
+    setTodos([...todos, newTodo]);
     setTodoText("");
   };
 
@@ -17,13 +19,12 @@ function TodoApp() {
       <input
         type="text"
         value={todoText}
-        onInput={(e) => setTodoText(e.target.value)}
+        onChange={(e) => setTodoText(e.target.value)}
       />
       <button onClick={addTodo}>추가</button>
-      {/* key- index 고려하기 */}
       <ul>
-        {todos.map((todo, index) => (
-          <li key={todo.id}>{todo}</li>
+        {todos.map((todo) => (
+          <li key={todo.id}>{todo.text}</li>
         ))}
       </ul>
     </div>
