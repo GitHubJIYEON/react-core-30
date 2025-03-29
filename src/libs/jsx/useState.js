@@ -1,50 +1,58 @@
-import { diff } from "./diff.js";
-
-let hooks = [];
+// 전역 상태 관리
+let states = [];
 let hookIndex = 0;
-let rerenderCallback = null;
-let oldVDOM = null;
-let root = null;
+let rerender = null;
 
 /**
- * rerender 함수와 root DOM을 주입
- * @param {Function} renderFn - Virtual DOM을 반환하는 함수
- * @param {HTMLElement} rootElement - 실제 DOM 루트
+ * rerender 함수 주입
+ * @param {Function} rerenderFunction - 컴포넌트를 다시 렌더링하는 함수
  */
-export function injectRerender(renderFn, rootElement) {
-  rerenderCallback = renderFn;
-  root = rootElement;
+export function injectRerender(rerenderFunction) {
+  rerender = rerenderFunction;
 }
 
 /**
- * useState 훅
- * @param {any} initialValue - 초기 상태 값
- * @returns {[any, Function]} - [state, setState]
- */
-export function useState(initialValue) {
-  const position = hookIndex;
-
-  if (hooks[position] === undefined) {
-    hooks[position] = initialValue;
-  }
-
-  const setState = (newValue) => {
-    hooks[position] = newValue;
-
-    if (rerenderCallback && root) {
-      const newVDOM = rerenderCallback();
-      diff(root, newVDOM, oldVDOM);
-      oldVDOM = newVDOM;
-    }
-  };
-
-  hookIndex++;
-  return [hooks[position], setState];
-}
-
-/**
- * hook 인덱스를 초기화 (렌더링 전에 호출)
+ * 훅 인덱스 초기화 (리렌더링 전 호출)
  */
 export function resetHookIndex() {
   hookIndex = 0;
 }
+
+/**
+ * React의 useState와 유사한 상태 관리 훅
+ * @param {any} initialValue - 상태의 초기값
+ * @returns {Array} [현재 상태 값, 상태 업데이트 함수]
+ */
+export function useState(initialValue) {
+  const currentIndex = hookIndex;
+  hookIndex++;
+
+  // 초기 렌더링 시 상태 초기화
+  if (states[currentIndex] === undefined) {
+    states[currentIndex] =
+      typeof initialValue === "function" ? initialValue() : initialValue;
+  }
+
+  // 상태 업데이트 함수
+  const setState = (newValue) => {
+    // 함수인 경우 이전 상태를 인자로 받는다
+    const value =
+      typeof newValue === "function"
+        ? newValue(states[currentIndex])
+        : newValue;
+
+    // 값이 변경된 경우만 리렌더링
+    if (states[currentIndex] !== value) {
+      states[currentIndex] = value;
+
+      // 리렌더링 트리거
+      if (rerender) {
+        rerender();
+      }
+    }
+  };
+
+  return [states[currentIndex], setState];
+}
+
+export default useState;
